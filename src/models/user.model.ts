@@ -1,0 +1,56 @@
+import {
+  DataTypes,
+  Model,
+  InferAttributes,
+  CreationOptional,
+  InferCreationAttributes,
+} from "sequelize";
+import { sequelize as sq } from "../config/db";
+
+interface User
+  extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
+  id: CreationOptional<number>;
+  username: string;
+  account: string;
+  userImage: string;
+  email: string;
+  hashedPassword: string;
+  createdAt: CreationOptional<Date>;
+}
+
+const User = sq.define<User>("user", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  username: {
+    allowNull: false,
+    type: DataTypes.STRING,
+  },
+  account: {
+    allowNull: false,
+    type: DataTypes.STRING,
+    unique: true,
+  },
+  userImage: {
+    allowNull: false,
+    type: DataTypes.STRING,
+  },
+  email: {
+    allowNull: false,
+    type: DataTypes.STRING,
+    unique: true,
+  },
+  hashedPassword: {
+    allowNull: false,
+    type: DataTypes.STRING,
+  },
+  createdAt: {
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+    type: DataTypes.DATE,
+  },
+});
+
+export default User;

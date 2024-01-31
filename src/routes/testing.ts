@@ -2,8 +2,8 @@ import express, { Request, Response } from "express";
 
 const router = express.Router();
 
-router.get("/reviews", (req: Request, res: Response) => {
-  res.send("Hello World!");
+router.get("/ping", (req: Request, res: Response) => {
+  res.status(200).json({ message: "pong" });
 });
 
 export default router;

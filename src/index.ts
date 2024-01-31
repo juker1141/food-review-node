@@ -1,18 +1,35 @@
+import path from "path";
 import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+
+import testingRoutes from "./routes/testing";
+import userRoutes from "./routes/user";
 import reviewRoutes from "./routes/review";
 
 const app = express();
+dotenv.config();
 
-const port = 6000;
+app.use(
+  cors({
+    origin: "*",
+    methods: "*",
+    allowedHeaders: "*",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.use("/static", express.static(path.join(__dirname, "../public")));
+app.use(testingRoutes);
+
+app.use(userRoutes);
 app.use(reviewRoutes);
 
-app.listen(port, () => {
-  if (port === 6000) {
-    console.log("true");
-  }
-  console.log(`server is listening on ${port} !!!`);
+const PORT = process.env.SERVER_PORT || 6300;
+app.listen(PORT, () => {
+  console.log(`Backend server is running on port ${PORT}`);
 });
