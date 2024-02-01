@@ -12,11 +12,14 @@ module.exports = {
       username: {
         allowNull: false,
         type: Sequelize.STRING,
+        is: /^[a-zA-Z\s]+$/i,
       },
       account: {
         allowNull: false,
         type: Sequelize.STRING,
         unique: true,
+        len: [8, 20],
+        is: /^[a-zA-Z0-9]+$/i,
       },
       userImage: {
         allowNull: false,
@@ -26,12 +29,18 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING,
         unique: true,
+        isEmail: true,
       },
       hashedPassword: {
         allowNull: false,
         type: Sequelize.STRING,
       },
       createdAt: {
+        allowNull: false,
+        defaultValue: Sequelize.NOW,
+        type: Sequelize.DATE,
+      },
+      updatedAt: {
         allowNull: false,
         defaultValue: Sequelize.NOW,
         type: Sequelize.DATE,

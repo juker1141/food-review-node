@@ -16,6 +16,7 @@ interface User
   email: string;
   hashedPassword: string;
   createdAt: CreationOptional<Date>;
+  updatedAt: CreationOptional<Date>;
 }
 
 const User = sq.define<User>("user", {
@@ -27,11 +28,18 @@ const User = sq.define<User>("user", {
   username: {
     allowNull: false,
     type: DataTypes.STRING,
+    validate: {
+      is: /^[a-zA-Z\s]+$/i,
+    },
   },
   account: {
     allowNull: false,
     type: DataTypes.STRING,
     unique: true,
+    validate: {
+      len: [8, 20],
+      is: /^[a-zA-Z0-9]+$/i,
+    },
   },
   userImage: {
     allowNull: false,
@@ -41,12 +49,20 @@ const User = sq.define<User>("user", {
     allowNull: false,
     type: DataTypes.STRING,
     unique: true,
+    validate: {
+      isEmail: true,
+    },
   },
   hashedPassword: {
     allowNull: false,
     type: DataTypes.STRING,
   },
   createdAt: {
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+    type: DataTypes.DATE,
+  },
+  updatedAt: {
     allowNull: false,
     defaultValue: DataTypes.NOW,
     type: DataTypes.DATE,
