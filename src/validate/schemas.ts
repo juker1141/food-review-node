@@ -5,8 +5,13 @@ const PASSWORD_REGEX = new RegExp(
 );
 
 const authSignup = Joi.object().keys({
-  username: Joi.string().required(),
-  account: Joi.string().min(8).required(),
+  username: Joi.string()
+    .pattern(/^[a-zA-Z\s]+$/i)
+    .required(),
+  account: Joi.string()
+    .min(8)
+    .pattern(/^[a-zA-Z0-9]+$/i)
+    .required(),
   email: Joi.string().email().required(),
   // password: Joi.string().pattern(PASSWORD_REGEX).min(8).required(),
   password: Joi.string().min(8).required(),
