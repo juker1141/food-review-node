@@ -32,7 +32,7 @@ app.use(testingRoutes);
 app.use(userRoutes);
 app.use(reviewRoutes);
 
-const PORT = process.env.SERVER_PORT || 6001;
+const PORT = process.env.SERVER_PORT || 6300;
 
 testDbConnection().then(() => {
   app.listen(PORT, () => {

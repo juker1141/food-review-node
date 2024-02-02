@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize as sq } from "../config/db";
 
-import User from "@/models/user.model";
+import User from "../models/user.model";
 
 const Review = sq.define("review", {
   id: {
