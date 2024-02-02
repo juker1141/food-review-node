@@ -1,37 +1,18 @@
-export const errorResponse = (error: any) => {
-  return { error: error };
-};
+import { Response } from "express";
+import { ValidationError } from "sequelize";
 
-export const errorMsgRequired = (key: string) => {
-  return `${key} is required`;
-};
+export const internalError = "Internal Error.";
 
-export const errorMsgUsername = (key: string) => {
-  return `${key} must only contain Chinese characters, English letters, or spaces`;
-};
+export const authError = "Authentication failed";
 
-export const errorMsgAccount = (key: string) => {
-  return `${key} must contain English letters, digits`;
-};
+export const userNotFoundError = "User not found";
 
-export const errorMsgEmail = (key: string) => {
-  return `Valid ${key} format required`;
-};
-
-export const errorMsgConfirmPassword = (key: string) => {
-  return `${key} must be the same as password`;
-};
-
-export const errorMsgLength = (
-  key: string,
-  { min, max }: { min?: number; max?: number }
-) => {
-  if (min && max) {
-    return `${key} must contain from ${min}-${max} characters`;
-  } else if (min) {
-    return `${key} must contain more than ${min} characters`;
-  } else if (max) {
-    return `${key} must contain fewer than ${max} characters`;
+export function handleSequelizeError(res: Response, error: any): Response {
+  if (error instanceof ValidationError) {
+    // 驗證錯誤，可能是 email 或 username 不符合條件
+    return res
+      .status(409)
+      .json({ errors: error.errors.map((e: any) => e.message) });
   }
-  return "";
-};
+  return res.status(500).json({ errors: internalError });
+}
