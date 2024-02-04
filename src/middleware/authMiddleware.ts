@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
-import { internalError, authError } from "../util/error";
+import { internalError, authError, authForbiddenError } from "../util/error";
 
 export interface CustomRequest extends Request {
-  userId: string | JwtPayload;
+  user: JwtPayload;
 }
 
 const authVerifyToken = (req: Request, res: Response, next: NextFunction) => {
@@ -15,22 +15,23 @@ const authVerifyToken = (req: Request, res: Response, next: NextFunction) => {
     });
   }
   const token = authHeader.split(" ")[1];
-  try {
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      return res.status(500).json({
-        errors: internalError,
-      });
-    }
 
-    const decoded = jwt.verify(token, jwtSecret);
-    (req as CustomRequest).userId = decoded;
-    next();
-  } catch (error) {
-    res.status(401).json({
-      errors: authError,
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    return res.status(500).json({
+      errors: internalError,
     });
   }
+  jwt.verify(token, jwtSecret, function (err: any, decoded: any) {
+    if (err) {
+      return res.status(403).json({ message: authForbiddenError });
+    }
+
+    // 将用户信息附加到请求对象上
+    (req as CustomRequest).user = decoded.user;
+
+    next();
+  });
 };
 
 export default authVerifyToken;

@@ -10,9 +10,33 @@ import { hashedPassword, checkPassword } from "../util/password";
 import {
   internalError,
   authError,
-  userNotFoundError,
+  notFoundError,
   handleSequelizeError,
+  authForbiddenError,
 } from "../util/error";
+
+export type ResponseUser = {
+  id: number;
+  username: string;
+  account: string;
+  email: string;
+  userImage: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+const getResponseUser = (user: User): ResponseUser => {
+  const data = user.dataValues;
+  return {
+    id: data.id,
+    username: data.username,
+    account: data.account,
+    email: data.email,
+    userImage: data.userImage,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+  };
+};
 
 type ReqCreateUserBody = {
   username: string;
@@ -20,18 +44,6 @@ type ReqCreateUserBody = {
   email: string;
   password: string;
   confirmPassword: string;
-};
-
-const getResponseUser = (user: User) => {
-  const data = user.dataValues;
-  return {
-    id: data.id,
-    account: data.account,
-    email: data.email,
-    userImage: data.userImage,
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
-  };
 };
 
 export const createUser = async (
@@ -77,7 +89,7 @@ export const signIn = async (
     });
 
     if (!user) {
-      return res.status(404).json({ errors: userNotFoundError });
+      return res.status(404).json({ errors: notFoundError });
     }
 
     const isPwEqual = checkPassword(password, user.hashedPassword);
@@ -94,8 +106,8 @@ export const signIn = async (
       });
     }
 
-    const accessToken = jwt.sign({ userId: user.id }, jwtSecret, {
-      expiresIn: "7d",
+    const accessToken = jwt.sign({ user: getResponseUser(user) }, jwtSecret, {
+      expiresIn: "30m",
     });
 
     return res.status(200).json({
@@ -108,25 +120,15 @@ export const signIn = async (
 };
 
 export const getUser = async (req: Request, res: Response) => {
-  const userId = (req as CustomRequest).userId;
-  if (!userId) {
+  const tokenUser = (req as CustomRequest).user as ResponseUser;
+  if (!tokenUser) {
     return res.status(401).json({ errors: authError });
   }
 
-  let user;
+  const user = await User.findByPk(tokenUser.id);
 
-  if (typeof userId === "string") {
-    // 如果userId是string类型，直接传递给findByPk
-    user = await User.findByPk(userId);
-  } else {
-    const userIdFromPayload = (userId as JwtPayload).id;
-    if (!userIdFromPayload) {
-      return res.status(404).json({ errors: userNotFoundError });
-    }
-    user = await User.findByPk(userIdFromPayload);
-  }
   if (!user) {
-    return res.status(404).json({ errors: userNotFoundError });
+    return res.status(404).json({ errors: notFoundError });
   }
 
   res.status(200).json({
@@ -134,3 +136,46 @@ export const getUser = async (req: Request, res: Response) => {
     data: getResponseUser(user),
   });
 };
+
+// type ReqUpdateUserParams = {
+//   id: string;
+// };
+
+// type ReqUpdateUserBody = {
+//   username?: string;
+//   oldPassword?: string;
+//   newPassword?: string;
+// };
+
+// export const updateUser = async (
+//   req: Request<{}, {}, ReqUpdateUserBody>,
+//   res: Response
+// ) => {
+//   const userId = req.params.id;
+//   const tokenUser = (req as CustomRequest).user as ResponseUser;
+
+//   if (!tokenUser) {
+//     return res.status(401).json({ errors: authError });
+//   }
+
+//   if (parseInt(userId, 10) !== tokenUser.id) {
+//     return res.status(403).json({ errors: authForbiddenError });
+//   }
+
+//   const userToUpdate = await User.findByPk(tokenUser.id);
+
+//   if (!userToUpdate) {
+//     return res.status(404).json({ errors: notFoundError });
+//   }
+
+//   const { username } = req.body;
+
+//   // 更新用户实例的属性
+//   userToUpdate.username = username;
+//   userToUpdate.email = email;
+
+//   res.status(200).json({
+//     status: "success",
+//     data: getResponseUser(user),
+//   });
+// };

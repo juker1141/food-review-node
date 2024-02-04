@@ -1,11 +1,17 @@
 import { Response } from "express";
 import { ValidationError } from "sequelize";
 
+// 500
 export const internalError = "Internal Error.";
 
+// 401
 export const authError = "Authentication failed";
 
-export const userNotFoundError = "User not found";
+// 403
+export const authForbiddenError = "Authentication forbidden";
+
+// 404
+export const notFoundError = "Not found";
 
 export function handleSequelizeError(res: Response, error: any): Response {
   if (error instanceof ValidationError) {
