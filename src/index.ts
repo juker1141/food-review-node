@@ -8,6 +8,7 @@ import { testDbConnection } from "./config/db";
 import testingRoutes from "./routes/testing";
 import userRoutes from "./routes/user";
 import reviewRoutes from "./routes/review";
+import shopRoutes from "./routes/shop";
 
 const app = express();
 dotenv.config();
@@ -31,6 +32,7 @@ app.use(testingRoutes);
 
 app.use(userRoutes);
 app.use(reviewRoutes);
+app.use(shopRoutes);
 
 const PORT = process.env.SERVER_PORT || 6300;
 

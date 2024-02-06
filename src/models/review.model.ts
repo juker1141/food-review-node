@@ -1,23 +1,55 @@
-import { DataTypes } from "sequelize";
+import {
+  DataTypes,
+  Model,
+  InferAttributes,
+  CreationOptional,
+  InferCreationAttributes,
+} from "sequelize";
 import { sequelize as sq } from "../config/db";
 
 import User from "../models/user.model";
+import Shop from "../models/shop.model";
 
-const Review = sq.define("review", {
+interface Review
+  extends Model<InferAttributes<Review>, InferCreationAttributes<Review>> {
+  id: CreationOptional<number>;
+  userId: number;
+  shopId: number;
+  rating: number;
+  imageUrl: string;
+  title: string;
+  content: string;
+  createdAt: CreationOptional<Date>;
+  updatedAt: CreationOptional<Date>;
+}
+
+const Review = sq.define<Review>("review", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
   },
-  shopTitle: {
-    type: DataTypes.STRING,
+  userId: {
     allowNull: false,
+    type: DataTypes.INTEGER,
+    references: {
+      model: "users",
+      key: "id",
+    },
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
   },
-  shopUrl: {
-    type: DataTypes.STRING,
+  shopId: {
     allowNull: false,
+    type: DataTypes.INTEGER,
+    references: {
+      model: "shops",
+      key: "id",
+    },
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
   },
-  stars: {
+  rating: {
     type: DataTypes.INTEGER,
     allowNull: false,
     validate: {
@@ -42,13 +74,16 @@ const Review = sq.define("review", {
     allowNull: false,
     defaultValue: DataTypes.NOW,
   },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
 });
 
 User.hasMany(Review);
+Shop.hasMany(Review);
 Review.belongsTo(User, { foreignKey: "userId" });
-
-Review.sync().then(() => {
-  console.log("Review Model synced");
-});
+Review.belongsTo(Shop, { foreignKey: "shopId" });
 
 export default Review;
