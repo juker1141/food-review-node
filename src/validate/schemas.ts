@@ -26,9 +26,9 @@ const authSignin = Joi.object().keys({
 const authUpdateUser = Joi.object().keys({
   username: Joi.string().pattern(/^[a-zA-Z\s]+$/i),
   oldPassword: Joi.string().min(8),
-  newPassword: Joi.string().when("password", {
+  newPassword: Joi.string().when("oldPassword", {
     is: Joi.exist(),
-    then: Joi.string().min(8).required(),
+    then: Joi.string().min(8).invalid(Joi.ref("oldPassword")).required(),
     otherwise: Joi.optional(),
   }),
 });
