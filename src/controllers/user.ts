@@ -3,17 +3,17 @@ import { Op } from "sequelize";
 
 import jwt from "jsonwebtoken";
 
-import { CustomJWTRequest } from "../middleware/authMiddleware";
+import { CustomJWTRequest } from "@/middleware/authMiddleware";
 
-import User from "../models/user.model";
-import { hashedPassword, checkPassword } from "../util/password";
+import User from "@/models/user.model";
+import { hashedPassword, checkPassword } from "@/util/password";
 import {
   internalError,
   authError,
   notFoundError,
   handleSequelizeError,
   authForbiddenError,
-} from "../util/error";
+} from "@/util/error";
 
 export interface ResponseUser {
   id: number;

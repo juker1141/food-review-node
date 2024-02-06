@@ -4,17 +4,17 @@ import express from "express";
 
 import multer from "multer";
 
-import schemaValidator from "../middleware/schemaValidator";
-import authMiddleware from "../middleware/authMiddleware";
+import schemaValidator from "@/middleware/schemaValidator";
+import authMiddleware from "@/middleware/authMiddleware";
 
 import {
   createUser,
   signIn,
   getUserByToken,
   updateUserByToken,
-} from "../controllers/user";
+} from "@/controllers/user";
 
-import { getStorageConfig } from "../util/file";
+import { getStorageConfig } from "@/util/file";
 
 const upload = multer({ storage: getStorageConfig("public/images/avatar") });
 

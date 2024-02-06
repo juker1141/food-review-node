@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-import { internalError, authError, authForbiddenError } from "../util/error";
-import { ResponseUser } from "../controllers/user";
+import { internalError, authError, authForbiddenError } from "@/util/error";
+import { ResponseUser } from "@/controllers/user";
 
 export interface CustomJWTRequest extends Request {
   user?: ResponseUser;

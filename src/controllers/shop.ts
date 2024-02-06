@@ -1,11 +1,11 @@
 import { Response } from "express";
 import { Op } from "sequelize";
 
-import { CustomJWTRequest } from "../middleware/authMiddleware";
+import { CustomJWTRequest } from "@/middleware/authMiddleware";
 
-import Shop from "../models/shop.model";
-import { replaceImageUrl } from "../util/file";
-import { handleSequelizeError, notFoundError } from "../util/error";
+import Shop from "@/models/shop.model";
+import { replaceImageUrl } from "@/util/file";
+import { handleSequelizeError, notFoundError } from "@/util/error";
 
 interface GetShopsRequest extends CustomJWTRequest {
   query: {

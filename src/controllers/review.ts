@@ -1,15 +1,15 @@
 import { Response } from "express";
 import { Op } from "sequelize";
 
-import { CustomJWTRequest } from "../middleware/authMiddleware";
-import Shop from "../models/shop.model";
-import Review from "../models/review.model";
+import { CustomJWTRequest } from "@/middleware/authMiddleware";
+import Shop from "@/models/shop.model";
+import Review from "@/models/review.model";
 import {
   internalError,
   handleSequelizeError,
   authForbiddenError,
-} from "../util/error";
-import { replaceImageUrl } from "../util/file";
+} from "@/util/error";
+import { replaceImageUrl } from "@/util/file";
 
 interface CreateReviewBody {
   shopId?: number;

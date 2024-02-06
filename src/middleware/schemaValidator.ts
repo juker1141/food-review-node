@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import schemas from "../validate/schemas";
+import schemas from "@/validate/schemas";
 
 interface ValidationError {
   message: string;

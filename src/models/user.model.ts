@@ -5,7 +5,7 @@ import {
   CreationOptional,
   InferCreationAttributes,
 } from "sequelize";
-import { sequelize as sq } from "../config/db";
+import { sequelize as sq } from "@/config/db";
 
 interface User
   extends Model<InferAttributes<User>, InferCreationAttributes<User>> {

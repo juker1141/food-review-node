@@ -4,12 +4,12 @@ import express, { Request, Response } from "express";
 
 import multer from "multer";
 
-import schemaValidator from "../middleware/schemaValidator";
-import authMiddleware from "../middleware/authMiddleware";
+import schemaValidator from "@/middleware/schemaValidator";
+import authMiddleware from "@/middleware/authMiddleware";
 
-import { getShops, updateShop } from "../controllers/shop";
+import { getShops, updateShop } from "@/controllers/shop";
 
-import { getStorageConfig } from "../util/file";
+import { getStorageConfig } from "@/util/file";
 
 const upload = multer({ storage: getStorageConfig("public/images/shop") });
 
