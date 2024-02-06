@@ -46,6 +46,10 @@ module.exports = {
         type: Sequelize.DATE,
       },
     });
+
+    await queryInterface.addIndex("users", ["account", "email"], {
+      unique: true,
+    });
   },
 
   async down(queryInterface, Sequelize) {
