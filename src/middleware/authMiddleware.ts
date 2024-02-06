@@ -8,7 +8,7 @@ export interface CustomJWTRequest extends Request {
   user?: ResponseUser;
 }
 
-const authVerifyToken = async (
+const authMiddleware = async (
   req: CustomJWTRequest,
   res: Response,
   next: NextFunction
@@ -39,4 +39,4 @@ const authVerifyToken = async (
   }
 };
 
-export default authVerifyToken;
+export default authMiddleware;

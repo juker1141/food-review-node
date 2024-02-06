@@ -3,26 +3,17 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 
-import { testDbConnection } from "./config/db";
+import { testDbConnection } from "@/config/db";
 
-import testingRoutes from "./routes/testing";
-import userRoutes from "./routes/user";
-import reviewRoutes from "./routes/review";
-import shopRoutes from "./routes/shop";
+import testingRoutes from "@/routes/testing";
+import userRoutes from "@/routes/user";
+import reviewRoutes from "@/routes/review";
+import shopRoutes from "@/routes/shop";
 
 const app = express();
 dotenv.config();
 
-app.use(
-  cors()
-  // cors({
-  //   origin: "*",
-  //   methods: "*",
-  //   allowedHeaders: "*",
-  //   preflightContinue: false,
-  //   optionsSuccessStatus: 204,
-  // })
-);
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

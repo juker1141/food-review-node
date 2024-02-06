@@ -5,10 +5,10 @@ import {
   CreationOptional,
   InferCreationAttributes,
 } from "sequelize";
-import { sequelize as sq } from "../config/db";
+import { sequelize as sq } from "@/config/db";
 
-import User from "../models/user.model";
-import Shop from "../models/shop.model";
+import User from "@/models/user.model";
+import Shop from "@/models/shop.model";
 
 interface Review
   extends Model<InferAttributes<Review>, InferCreationAttributes<Review>> {

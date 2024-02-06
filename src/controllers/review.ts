@@ -1,9 +1,7 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { Op } from "sequelize";
 
 import { CustomJWTRequest } from "../middleware/authMiddleware";
-import { ResponseUser } from "./user";
-
 import Shop from "../models/shop.model";
 import Review from "../models/review.model";
 import {
@@ -11,6 +9,7 @@ import {
   handleSequelizeError,
   authForbiddenError,
 } from "../util/error";
+import { replaceImageUrl } from "../util/file";
 
 interface CreateReviewBody {
   shopId?: number;
@@ -60,7 +59,10 @@ export const createReview = async (req: createReviewRequest, res: Response) => {
       return res.status(500).json({ erros: internalError });
     }
 
-    const imageUrl = req.file?.path.replace("public/", "") || "";
+    let imageUrl = "";
+    if (req.file) {
+      imageUrl = replaceImageUrl(req.file?.path);
+    }
 
     const review = await Review.create({
       userId: tokenUser.id,

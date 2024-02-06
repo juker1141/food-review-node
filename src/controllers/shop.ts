@@ -1,30 +1,31 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { Op } from "sequelize";
 
+import { CustomJWTRequest } from "../middleware/authMiddleware";
+
 import Shop from "../models/shop.model";
-import { handleSequelizeError } from "../util/error";
-import { request } from "http";
+import { replaceImageUrl } from "../util/file";
+import { handleSequelizeError, notFoundError } from "../util/error";
 
-type QueryParams = {
-  page: number;
-  pageSize?: number;
-};
+interface GetShopsRequest extends CustomJWTRequest {
+  query: {
+    page: string;
+    pageSize?: string;
+  };
+  body: {
+    keyword?: string;
+  };
+}
 
-type ReqGetShopsBody = {
-  keyword?: string;
-};
-
-export const getShops = async (
-  req: Request<{}, {}, ReqGetShopsBody, QueryParams>,
-  res: Response
-) => {
+export const getShops = async (req: GetShopsRequest, res: Response) => {
   const { page, pageSize } = req.query;
   const { keyword } = req.body;
 
+  const parsePage = parseInt(page, 10);
   // 如果沒有給一頁的總數，預設為10筆
-  const actualPageSize = pageSize || 10;
+  const parsePageSize = pageSize ? parseInt(pageSize, 10) : 10;
 
-  const offset = (page - 1) * actualPageSize;
+  const offset = (parsePage - 1) * parsePageSize;
 
   let condition = {};
 
@@ -41,7 +42,7 @@ export const getShops = async (
   try {
     const shops = await Shop.findAll({
       ...condition,
-      limit: actualPageSize,
+      limit: parsePageSize,
       offset: offset,
     });
 
@@ -55,12 +56,43 @@ export const getShops = async (
   }
 };
 
-type UpdateParams = {
-  id: string;
-};
+interface UpdateShopRequest extends CustomJWTRequest {
+  params: {
+    id: string;
+  };
+  body: {
+    title?: string;
+    url?: string;
+  };
+  file?: Express.Multer.File;
+}
 
-type ReqUpdateShopBody = {};
-
-export const updateShop = async (req: Request<UpdateParams>, res: Response) => {
+export const updateShop = async (req: UpdateShopRequest, res: Response) => {
   const shopId = req.params.id;
+
+  const { title, url } = req.body;
+
+  try {
+    const shopToUpdate = await Shop.findByPk(shopId);
+
+    if (!shopToUpdate) {
+      return res.status(404).json({ errors: notFoundError });
+    }
+
+    if (title) shopToUpdate.title = title;
+
+    if (url) shopToUpdate.url = url;
+
+    if (req.file) {
+      shopToUpdate.imageUrl = replaceImageUrl(req.file?.path);
+    }
+
+    const updatedShop = await shopToUpdate.save();
+    return res.status(200).json({
+      status: "success",
+      data: updatedShop,
+    });
+  } catch (err: any) {
+    handleSequelizeError(res, err);
+  }
 };

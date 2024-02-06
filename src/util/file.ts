@@ -17,3 +17,7 @@ export const getStorageConfig = (targetFolder: string) =>
       );
     },
   });
+
+export const replaceImageUrl = (url: string) => {
+  return url.replace("public/", "");
+};

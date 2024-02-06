@@ -33,6 +33,11 @@ const authUpdateUser = Joi.object().keys({
   }),
 });
 
+const authUpdateShop = Joi.object().keys({
+  title: Joi.string(),
+  url: Joi.string(),
+});
+
 const createReview = Joi.object().keys({
   shopId: Joi.number(),
   shopTitle: Joi.string().when("shopId", {
@@ -54,5 +59,6 @@ export default {
   "/auth/user/signup": authSignup,
   "/auth/user/signin": authSignin,
   "/auth/user/update": authUpdateUser,
+  "/auth/shop/update": authUpdateShop,
   "/auth/review": createReview,
 } as { [key: string]: ObjectSchema };
