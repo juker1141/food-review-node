@@ -1,5 +1,5 @@
-import { randomString } from "../util/random";
-import { hashedPassword, checkPassword } from "../util/password";
+import { randomString } from "@/util/random";
+import { hashedPassword, checkPassword } from "@/util/password";
 
 test("Test Password Hash & Compare", () => {
   const password1 = randomString(8);
