@@ -16,4 +16,4 @@ migratedown:
 	npx sequelize-cli db:migrate:undo:all
 
 
-.PHONY: postgres createdb dropdb
+.PHONY: postgres createdb dropdb migrateup migratedown
