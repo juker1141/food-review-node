@@ -5,10 +5,7 @@ import cors from "cors";
 
 import { testDbConnection } from "@/config/db";
 
-import testingRoutes from "@/routes/testing";
-import userRoutes from "@/routes/user";
-import reviewRoutes from "@/routes/review";
-import shopRoutes from "@/routes/shop";
+import routes from "@/routes";
 
 const app = express();
 dotenv.config();
@@ -18,12 +15,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/static", express.static(path.join(__dirname, "../public")));
-app.use(testingRoutes);
-
-app.use(userRoutes);
-app.use(reviewRoutes);
-app.use(shopRoutes);
+app.use(routes);
 
 const PORT = process.env.SERVER_PORT || 6300;
 

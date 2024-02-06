@@ -56,6 +56,34 @@ export const getShops = async (req: GetShopsRequest, res: Response) => {
   }
 };
 
+interface CreateShopRequest extends CustomJWTRequest {
+  body: {
+    title: string;
+    url: string;
+  };
+  file?: Express.Multer.File;
+}
+
+export const createShop = async (req: CreateShopRequest, res: Response) => {
+  const { title, url } = req.body;
+
+  try {
+    let imageUrl = "";
+    if (req.file) {
+      imageUrl = replaceImageUrl(req.file?.path);
+    }
+
+    const shop = await Shop.create({
+      title,
+      url,
+      imageUrl,
+    });
+    return res.status(200).json({ status: "success", data: shop });
+  } catch (err: any) {
+    handleSequelizeError(res, err);
+  }
+};
+
 interface UpdateShopRequest extends CustomJWTRequest {
   params: {
     id: string;

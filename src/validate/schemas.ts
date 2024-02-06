@@ -1,7 +1,7 @@
 import Joi, { ObjectSchema } from "joi";
 
 import { authSignin, authSignup, authUpdateUser } from "@/validate/user";
-import { authUpdateShop } from "@/validate/shop";
+import { authCreateShop, authUpdateShop } from "@/validate/shop";
 import { authCreateReview } from "@/validate/review";
 
 export default {
@@ -9,6 +9,7 @@ export default {
   "/auth/user/signin": authSignin,
   "/auth/user/update": authUpdateUser,
 
+  "/auth/shop": authCreateShop,
   "/auth/shop/update": authUpdateShop,
 
   "/auth/review": authCreateReview,
