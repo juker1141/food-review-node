@@ -7,7 +7,7 @@ export const authCreateReview = Joi.object().keys({
     then: Joi.optional(),
     otherwise: Joi.required(),
   }),
-  shopUrl: Joi.string().when("shopId", {
+  shopUrl: Joi.string().uri().when("shopId", {
     is: Joi.exist(),
     then: Joi.optional(),
     otherwise: Joi.required(),
