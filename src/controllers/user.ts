@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
-import { CustomRequest } from "../middleware/authMiddleware";
+import { CustomJWTRequest } from "../middleware/authMiddleware";
 
 import User from "../models/user.model";
 import { hashedPassword, checkPassword } from "../util/password";
@@ -15,7 +15,7 @@ import {
   authForbiddenError,
 } from "../util/error";
 
-export type ResponseUser = {
+export interface ResponseUser {
   id: number;
   username: string;
   account: string;
@@ -23,7 +23,7 @@ export type ResponseUser = {
   userImage: string;
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
 const getResponseUser = (user: User): ResponseUser => {
   const data = user.dataValues;
@@ -38,25 +38,24 @@ const getResponseUser = (user: User): ResponseUser => {
   };
 };
 
-type ReqCreateUserBody = {
-  username: string;
-  account: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
+interface CreateUserRequest extends Request {
+  body: {
+    username: string;
+    account: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  };
+}
 
-export const createUser = async (
-  req: Request<{}, {}, ReqCreateUserBody>,
-  res: Response
-) => {
+export const createUser = async (req: CreateUserRequest, res: Response) => {
   try {
     const hashedPw = hashedPassword(req.body.password);
 
     const user = await User.create({
       username: req.body.username,
       account: req.body.account,
-      userImage: "images/default_avatar.png",
+      userImage: "images/avatar/default_avatar.png",
       email: req.body.email,
       hashedPassword: hashedPw,
     });
@@ -70,15 +69,14 @@ export const createUser = async (
   }
 };
 
-type ReqSignInBody = {
-  account: string;
-  password: string;
-};
+interface SignInRequest extends Request {
+  body: {
+    account: string;
+    password: string;
+  };
+}
 
-export const signIn = async (
-  req: Request<{}, {}, ReqSignInBody>,
-  res: Response
-) => {
+export const signIn = async (req: SignInRequest, res: Response) => {
   const { account, password } = req.body;
 
   try {
@@ -107,7 +105,7 @@ export const signIn = async (
     }
 
     const accessToken = jwt.sign({ user: getResponseUser(user) }, jwtSecret, {
-      expiresIn: "30m",
+      expiresIn: "1h",
     });
 
     return res.status(200).json({
@@ -119,8 +117,8 @@ export const signIn = async (
   }
 };
 
-export const getUser = async (req: Request, res: Response) => {
-  const tokenUser = (req as CustomRequest).user as ResponseUser;
+export const getUserByToken = async (req: CustomJWTRequest, res: Response) => {
+  const tokenUser = req.user;
   if (!tokenUser) {
     return res.status(401).json({ errors: authError });
   }
@@ -137,45 +135,70 @@ export const getUser = async (req: Request, res: Response) => {
   });
 };
 
-// type ReqUpdateUserParams = {
-//   id: string;
-// };
+interface UpdateUserRequest extends CustomJWTRequest {
+  body: {
+    username?: string;
+    oldPassword?: string;
+    newPassword?: string;
+  };
+  params: {
+    id: string;
+  };
+  file?: Express.Multer.File;
+}
 
-// type ReqUpdateUserBody = {
-//   username?: string;
-//   oldPassword?: string;
-//   newPassword?: string;
-// };
+export const updateUserByToken = async (
+  req: UpdateUserRequest,
+  res: Response
+) => {
+  const userId = req.params.id;
+  const tokenUser = req.user;
 
-// export const updateUser = async (
-//   req: Request<{}, {}, ReqUpdateUserBody>,
-//   res: Response
-// ) => {
-//   const userId = req.params.id;
-//   const tokenUser = (req as CustomRequest).user as ResponseUser;
+  if (!tokenUser) {
+    return res.status(401).json({ errors: authError });
+  }
 
-//   if (!tokenUser) {
-//     return res.status(401).json({ errors: authError });
-//   }
+  if (parseInt(userId, 10) !== tokenUser.id) {
+    console.log(parseInt(userId, 10), tokenUser.id);
+    return res.status(403).json({ errors: authForbiddenError });
+  }
+  try {
+    const userToUpdate = await User.findByPk(tokenUser.id);
 
-//   if (parseInt(userId, 10) !== tokenUser.id) {
-//     return res.status(403).json({ errors: authForbiddenError });
-//   }
+    if (!userToUpdate) {
+      return res.status(404).json({ errors: notFoundError });
+    }
 
-//   const userToUpdate = await User.findByPk(tokenUser.id);
+    const { username, oldPassword, newPassword } = req.body;
 
-//   if (!userToUpdate) {
-//     return res.status(404).json({ errors: notFoundError });
-//   }
+    if (username) {
+      userToUpdate.username = username;
+    }
 
-//   const { username } = req.body;
+    if (req.file) {
+      const imageUrl = req.file.path.replace("public/", "") || "";
+      userToUpdate.userImage = imageUrl;
+    }
 
-//   // 更新用户实例的属性
-//   userToUpdate.username = username;
-//   userToUpdate.email = email;
+    if (oldPassword && newPassword) {
+      const isVerify = checkPassword(oldPassword, userToUpdate.hashedPassword);
+      if (!isVerify) {
+        return res.status(403).json({
+          errors: authForbiddenError,
+        });
+      }
 
-//   res.status(200).json({
-//     status: "success",
-//     data: getResponseUser(user),
-//   });
-// };
+      const hashedPw = hashedPassword(newPassword);
+      userToUpdate.hashedPassword = hashedPw;
+    }
+
+    const updatedUser = await userToUpdate.save();
+
+    res.status(200).json({
+      status: "success",
+      data: getResponseUser(updatedUser),
+    });
+  } catch (err: any) {
+    return handleSequelizeError(res, err);
+  }
+};

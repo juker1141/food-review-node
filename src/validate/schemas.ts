@@ -15,7 +15,7 @@ const authSignup = Joi.object().keys({
   email: Joi.string().email().required(),
   // password: Joi.string().pattern(PASSWORD_REGEX).min(8).required(),
   password: Joi.string().min(8).required(),
-  confirmPassword: Joi.any().valid(Joi.ref("password")).required(),
+  confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
 });
 
 const authSignin = Joi.object().keys({
@@ -23,7 +23,36 @@ const authSignin = Joi.object().keys({
   password: Joi.string().required(),
 });
 
+const authUpdateUser = Joi.object().keys({
+  username: Joi.string().pattern(/^[a-zA-Z\s]+$/i),
+  oldPassword: Joi.string().min(8),
+  newPassword: Joi.string().when("password", {
+    is: Joi.exist(),
+    then: Joi.string().min(8).required(),
+    otherwise: Joi.optional(),
+  }),
+});
+
+const createReview = Joi.object().keys({
+  shopId: Joi.number(),
+  shopTitle: Joi.string().when("shopId", {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
+  shopUrl: Joi.string().when("shopId", {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
+  rating: Joi.number().required(),
+  title: Joi.string().required(),
+  content: Joi.string().required(),
+});
+
 export default {
   "/auth/user/signup": authSignup,
   "/auth/user/signin": authSignin,
+  "/auth/user/update": authUpdateUser,
+  "/auth/review": createReview,
 } as { [key: string]: ObjectSchema };
