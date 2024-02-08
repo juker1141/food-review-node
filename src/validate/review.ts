@@ -1,7 +1,7 @@
 import Joi from "joi";
 
 export const authCreateReview = Joi.object().keys({
-  shopId: Joi.number(),
+  shopId: Joi.string(),
   shopTitle: Joi.string().when("shopId", {
     is: Joi.exist(),
     then: Joi.optional(),

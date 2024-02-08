@@ -1,11 +1,13 @@
 import { Response } from "express";
-import { Op } from "sequelize";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient({
+  errorFormat: "pretty",
+});
 
 import { CustomJWTRequest } from "@/middleware/authMiddleware";
 
-import Shop from "@/models/shop.model";
 import { replaceImageUrl } from "@/util/file";
-import { handleSequelizeError, notFoundError } from "@/util/error";
+import { handlePrismaError, notFoundError } from "@/util/error";
 
 interface GetShopsRequest extends CustomJWTRequest {
   query: {
@@ -25,7 +27,7 @@ export const getShops = async (req: GetShopsRequest, res: Response) => {
   // 如果沒有給一頁的總數，預設為10筆
   const parsePageSize = pageSize ? parseInt(pageSize, 10) : 10;
 
-  const offset = (parsePage - 1) * parsePageSize;
+  const skip = (parsePage - 1) * parsePageSize;
 
   let condition = {};
 
@@ -33,26 +35,26 @@ export const getShops = async (req: GetShopsRequest, res: Response) => {
     condition = {
       where: {
         title: {
-          [Op.like]: `%${req.body.keyword}%`,
+          contains: keyword,
         },
       },
     };
   }
 
   try {
-    const shops = await Shop.findAll({
+    const shops = await prisma.shop.findMany({
       ...condition,
-      limit: parsePageSize,
-      offset: offset,
+      skip,
+      take: parsePageSize,
     });
 
-    const count = await Shop.count({
+    const count = await prisma.shop.count({
       ...condition,
     });
 
     return res.status(200).json({ count, data: shops });
   } catch (err: any) {
-    return handleSequelizeError(res, err);
+    return handlePrismaError(res, err);
   }
 };
 
@@ -73,14 +75,16 @@ export const createShop = async (req: CreateShopRequest, res: Response) => {
       imageUrl = replaceImageUrl(req.file?.path);
     }
 
-    const shop = await Shop.create({
-      title,
-      url,
-      imageUrl,
+    const shop = await prisma.shop.create({
+      data: {
+        title,
+        url,
+        image: imageUrl,
+      },
     });
     return res.status(200).json({ status: "success", data: shop });
   } catch (err: any) {
-    handleSequelizeError(res, err);
+    handlePrismaError(res, err);
   }
 };
 
@@ -101,26 +105,31 @@ export const updateShop = async (req: UpdateShopRequest, res: Response) => {
   const { title, url } = req.body;
 
   try {
-    const shopToUpdate = await Shop.findByPk(shopId);
+    const updateData: {
+      title?: string;
+      url?: string;
+      image?: string;
+    } = {};
 
-    if (!shopToUpdate) {
-      return res.status(404).json({ errors: notFoundError });
-    }
+    if (title) updateData.title = title;
 
-    if (title) shopToUpdate.title = title;
-
-    if (url) shopToUpdate.url = url;
+    if (url) updateData.url = url;
 
     if (req.file) {
-      shopToUpdate.imageUrl = replaceImageUrl(req.file?.path);
+      updateData.image = replaceImageUrl(req.file?.path);
     }
 
-    const updatedShop = await shopToUpdate.save();
+    const updatedShop = await prisma.shop.update({
+      where: {
+        id: shopId,
+      },
+      data: updateData,
+    });
     return res.status(200).json({
       status: "success",
       data: updatedShop,
     });
   } catch (err: any) {
-    handleSequelizeError(res, err);
+    handlePrismaError(res, err);
   }
 };

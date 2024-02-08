@@ -10,14 +10,15 @@ export const getStorageConfig = (targetFolder: string) =>
       cb(null, balayAudPath);
     },
     filename: function (req, file, cb) {
+      console.log(file.originalname);
       cb(
         null,
         // timestamp_filename.extname
-        `${Date.now()}_${file.originalname}${path.extname(file.originalname)}`
+        `${Date.now()}_${file.originalname}`
       );
     },
   });
 
 export const replaceImageUrl = (url: string) => {
-  return url.replace("public/", "");
+  return url.replace("public", "static");
 };

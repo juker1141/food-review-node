@@ -1,18 +1,19 @@
 import { Response } from "express";
-import { Op } from "sequelize";
+import { PrismaClient, Shop } from "@prisma/client";
+const prisma = new PrismaClient({
+  errorFormat: "pretty",
+});
 
 import { CustomJWTRequest } from "@/middleware/authMiddleware";
-import Shop from "@/models/shop.model";
-import Review from "@/models/review.model";
 import {
   internalError,
-  handleSequelizeError,
+  handlePrismaError,
   authForbiddenError,
 } from "@/util/error";
 import { replaceImageUrl } from "@/util/file";
 
 interface CreateReviewBody {
-  shopId?: number;
+  shopId?: string;
   shopTitle?: string;
   shopUrl?: string;
   rating: number;
@@ -35,23 +36,32 @@ export const createReview = async (req: createReviewRequest, res: Response) => {
   const { shopTitle, shopUrl, shopId, rating, title, content } = req.body;
 
   try {
-    let shop: Shop | null;
+    let shop: Shop | null = null;
 
     if (shopId) {
-      shop = await Shop.findByPk(shopId);
-    } else {
-      shop = await Shop.findOne({
+      shop = await prisma.shop.findUnique({
         where: {
-          [Op.or]: [{ title: shopTitle }, { url: shopUrl }],
+          id: shopId,
+        },
+      });
+    } else if (shopTitle && shopUrl) {
+      shop = await prisma.shop.findFirst({
+        where: {
+          OR: [
+            { title: { contains: shopTitle } },
+            { url: { contains: shopUrl } },
+          ],
         },
       });
     }
 
     if (!shop && !shopId && shopTitle && shopUrl) {
-      shop = await Shop.create({
-        title: shopTitle,
-        url: shopUrl,
-        imageUrl: "",
+      shop = await prisma.shop.create({
+        data: {
+          title: shopTitle,
+          url: shopUrl,
+          image: "",
+        },
       });
     }
 
@@ -64,19 +74,22 @@ export const createReview = async (req: createReviewRequest, res: Response) => {
       imageUrl = replaceImageUrl(req.file?.path);
     }
 
-    const review = await Review.create({
-      userId: tokenUser.id,
-      shopId: shopId || shop?.id,
-      rating,
-      imageUrl,
-      title,
-      content,
+    const review = await prisma.review.create({
+      data: {
+        reviewerId: tokenUser.id,
+        shopId: shopId || shop?.id,
+        rating,
+        image: imageUrl,
+        title,
+        content,
+      },
     });
-    return res.status(200).json({
+
+    return res.status(201).json({
       status: "success",
       data: review,
     });
   } catch (err: any) {
-    return handleSequelizeError(res, err);
+    return handlePrismaError(res, err);
   }
 };

@@ -9,3 +9,47 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id             String   @id @default(uuid())
+  username       String
+  account        String   @unique
+  email          String   @unique
+  hashedPassword String
+  image          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  reviews        Review[]
+  favoriteShops  Shop[]
+
+  @@unique([account, email])
+  @@index([email, account])
+}
+
+model Shop {
+  id           String   @id @default(uuid())
+  title        String
+  url          String
+  image        String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  reviews      Review[]
+  favoriteBy   User?    @relation(fields: [favoriteById], references: [id])
+  favoriteById String?
+
+  @@unique([title, url])
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  Shop       Shop     @relation(fields: [shopId], references: [id])
+  shopId     String
+  reviewer   User     @relation(fields: [reviewerId], references: [id])
+  reviewerId String
+  rating     Int
+  image      String
+  title      String
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
