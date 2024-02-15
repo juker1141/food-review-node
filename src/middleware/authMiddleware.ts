@@ -35,7 +35,7 @@ const authMiddleware = async (
       next();
     }
   } catch (err: any) {
-    return res.status(403).json({ message: authForbiddenError });
+    return res.status(403).json({ message: err.message });
   }
 };
 

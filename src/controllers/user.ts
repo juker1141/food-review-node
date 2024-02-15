@@ -28,7 +28,7 @@ export interface ResponseUser {
   updatedAt: Date;
 }
 
-const getResponseUser = (user: User): ResponseUser => {
+export const getResponseUser = (user: User): ResponseUser => {
   return {
     id: user.id,
     username: user.username,
@@ -40,14 +40,16 @@ const getResponseUser = (user: User): ResponseUser => {
   };
 };
 
+export interface CreateUserReqBody {
+  username: string;
+  account: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 interface CreateUserRequest extends Request {
-  body: {
-    username: string;
-    account: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  };
+  body: CreateUserReqBody;
 }
 
 export const createUser = async (req: CreateUserRequest, res: Response) => {
